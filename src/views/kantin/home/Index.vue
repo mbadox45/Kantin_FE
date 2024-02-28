@@ -15,7 +15,7 @@
     const value_rfid = ref('')
     const count_user = ref(null)
     const color_text_notif = ref('')
-    const messages = ref({nama:'', msg:''})
+    const messages = ref({nama:'', msg:'',jam:moment().format('HH:mm:ss')})
     const list_user_hadir = ref([])
 
     // Function
@@ -149,6 +149,7 @@
                 <div class="flex flex-column justify-content-center align-items-center h-6rem border-top-1 border-bluegray-100 w-full">
                     <span class="uppercase text-3xl font-semibold" v-show="value_rfid != ''">{{messages.nama}}</span>
                     <span class="uppercase text-2xl font-bold " v-show="value_rfid != ''" :style="`color:${color_text_notif}`">{{messages.msg}}</span>
+                    <small class="uppercase text-md font-bold " v-show="value_rfid != ''">{{messages.jam}}</small>
                 </div>
             </div>
             <div class="flex flex-column w-8 p-3 bg-bluegray-100 border-left-1 border-bluegray-100">
