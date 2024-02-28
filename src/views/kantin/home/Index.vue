@@ -72,7 +72,8 @@
                         const kondisi = 1
                         messages.value = {
                             nama: load.nama,
-                            msg: data.status
+                            msg: data.status,
+                            jam: moment().format('HH:mm:ss')
                         }
                         if (kondisi == 1) {
                             color_text_notif.value = '#AD1457'
@@ -83,7 +84,8 @@
                             value_rfid.value = ''
                             messages.value = {
                                 nama: '',
-                                msg: ''
+                                msg: '',
+                                jam: moment().format('HH:mm:ss')
                             }
                             load_data_user()
                             post_absen()
@@ -91,26 +93,30 @@
                     } else {
                         messages.value = {
                             nama: 'Tidak Ada',
-                            msg: 'Tidak Ada'
+                            msg: 'Tidak Ada',
+                            jam: moment().format('HH:mm:ss')
                         }
                         setTimeout(() => {
                             value_rfid.value = ''
                             messages.value = {
                                 nama: '',
-                                msg: ''
+                                msg: '',
+                                jam: moment().format('HH:mm:ss')
                             }
                         }, 2000);
                     }
                 } else {
                     messages.value = {
                         nama: 'Belum Terdaftar !',
-                        msg: 'Silahkan daftarkan ID Card anda!'
+                        msg: 'Silahkan daftarkan ID Card anda!',
+                        jam: moment().format('HH:mm:ss')
                     }
                     setTimeout(() => {
                         value_rfid.value = ''
                         messages.value = {
                             nama: '',
-                            msg: ''
+                            msg: '',
+                            jam: moment().format('HH:mm:ss')
                         }
                     }, 2000);
                 }
