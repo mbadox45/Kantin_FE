@@ -87,6 +87,15 @@ const router = createRouter({
             }
         },
         {
+            path: '/absen-finger',
+            name: 'absen-finger',
+            component: () => import('@/views/kantin/visitor/Index.vue'),
+            meta:{
+                user:true,
+                admin:true,
+            }
+        },
+        {
             path: '/signout',
             name: 'signout',
             component: () => import('@/views/kantin/sign/SignOut.vue'),
@@ -95,24 +104,6 @@ const router = createRouter({
                 admin:true,
             }
         },
-        // {
-        //     path: '/',
-        //     name: 'Home',
-        //     component: () => import('@/views/portofolio/home/Index.vue'),
-        //     meta:{
-        //         guestOnly:true,
-        //     }
-        // },
-        // {
-        //     path: '/sign-out',
-        //     name: 'signout',
-        //     component: () => import('@/views/survey/administrator/sign/SignOut.vue'),
-        //     meta:{
-        //         requiresAuth: true,
-        //         distributor:true,
-        //         // admin:true,
-        //     }
-        // },
         {
             path: '/auth/login',
             name: 'login',
@@ -121,11 +112,11 @@ const router = createRouter({
                 guestOnly:true,
             }
         },
-        // {
-        //     path: '/:pathMatch(.*)*',
-        //     name: 'notfound',
-        //     component: () => import('@/views/survey/administrator/sign/NotFound.vue')
-        // },
+        {
+            path: '/:pathMatch(.*)*',
+            name: 'notfound',
+            component: () => import('@/views/pages/NotFound.vue')
+        },
     ]
 });
 
