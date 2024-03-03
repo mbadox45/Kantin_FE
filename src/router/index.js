@@ -78,6 +78,15 @@ const router = createRouter({
                 guestOnly:true,
             }
         },
+        {
+            path: '/signout',
+            name: 'signout',
+            component: () => import('@/views/kantin/sign/SignOut.vue'),
+            meta:{
+                user:true,
+                admin:true,
+            }
+        },
         // {
         //     path: '/',
         //     name: 'Home',
