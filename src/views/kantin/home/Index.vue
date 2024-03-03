@@ -65,7 +65,7 @@
             // setTimeout(async() => {
                 console.log(value_rfid.value)
                 if (value_rfid.value.length >= 10) {
-                    const response = await AbsenService.postAbsenKantin({rfid: value_rfid.value})
+                    const response = await AbsenService.postAbsenKantin({rfid: value_rfid.value, waktu: moment().format('YYYY-MM-DD HH:mm:ss')})
                     const data = response.data;
                     if (data.code == 200) {
                         const load = data.data;
@@ -183,7 +183,7 @@
     <div class="flex align-items-center fixed bottom-0 w-full">
         <div class="w-full py-2 w-full bg-bluegray-400">
             <!--<span class="font-medium text-white" style="font-family: Times New Roman, Times, serif;"><span class='font-bold text-gray-300 uppercase'>rekan</span> - 2022 &copy; PT Industri Nabati Lestari</span> -->
-            <marquee behavior="" direction="left" class="font-medium text-white" style="font-family: Times New Roman, Times, serif;"><span class='font-bold text-gray-300 uppercase'>rekan</span> - 2022 &copy; PT Industri Nabati Lestari</marquee>
+            <marquee behavior="" direction="left" class="font-medium text-white" style="font-family: Times New Roman, Times, serif;"><span class='font-bold text-gray-300 uppercase'>rekan</span> versi 2.0 - 2022 &copy; PT Industri Nabati Lestari</marquee>
         </div>
         <div class="w-3 flex">
             <span class="flex cursor-pointer w-full flex-row gap-2 transition-all transition-ease-in-out transition-duration-500 font-medium text-lg uppercase align-items-center justify-content-center px-3 py-2 border-0 text-white bg-teal-500 hover:bg-teal-300" @click="link('visitor')"><i class="pi pi-users"></i>Visitor</span>
