@@ -62,7 +62,7 @@
 
     const post_tapping_card = async () => {
         if (value_rfid.value != '') {
-            setTimeout(async() => {
+            // setTimeout(async() => {
                 console.log(value_rfid.value)
                 if (value_rfid.value.length >= 10) {
                     const response = await AbsenService.postAbsenKantin({rfid: value_rfid.value})
@@ -85,7 +85,7 @@
                             messages.value = {
                                 nama: '',
                                 msg: '',
-                                jam: moment().format('HH:mm:ss')
+                                jam: ''
                             }
                             load_data_user()
                             post_absen()
@@ -101,7 +101,7 @@
                             messages.value = {
                                 nama: '',
                                 msg: '',
-                                jam: moment().format('HH:mm:ss')
+                                jam: ''
                             }
                         }, 2000);
                     }
@@ -116,12 +116,12 @@
                         messages.value = {
                             nama: '',
                             msg: '',
-                            jam: moment().format('HH:mm:ss')
+                            jam: ''
                         }
                     }, 2000);
                 }
                 console.log(value_rfid.value)
-            }, 50)
+            // }, 50)
         } else {
             setTimeout(async() => {
                 value_rfid.value = ''
