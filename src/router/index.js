@@ -79,6 +79,14 @@ const router = createRouter({
             }
         },
         {
+            path: '/visitor',
+            name: 'visitor',
+            component: () => import('@/views/kantin/visitor/Index.vue'),
+            meta:{
+                guestOnly:true,
+            }
+        },
+        {
             path: '/signout',
             name: 'signout',
             component: () => import('@/views/kantin/sign/SignOut.vue'),
