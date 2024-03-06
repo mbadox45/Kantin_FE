@@ -52,7 +52,7 @@
             for (let i = 0; i < load.length; i++) {
                 list[i] = {
                     id: load[i].id,
-                    rfid_code: load[i].rfid_code,
+                    rfid_code: load[i].rfid_barcode,
                     kategori: load[i].kategori,
                     status: load[i].status,
                 }
