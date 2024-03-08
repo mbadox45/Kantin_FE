@@ -13,6 +13,7 @@
     // Components
     import TblBanding from '@/views/kantin/rekap/components/TblBanding.vue';
     import TblUser from '@/views/kantin/rekap/components/TblUser.vue';
+    import TblVisitor from '@/views/kantin/rekap/components/TblVisitor.vue';
 
     // Variable
     const jenis_user = ref('banding');
@@ -210,7 +211,7 @@
                         <tbl-user/>
                     </div>
                     <div v-show="active == 2">
-                        <strong>Visitor</strong>
+                        <tbl-visitor/>
                     </div>
                 </div>
             </div>

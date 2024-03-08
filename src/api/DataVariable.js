@@ -46,3 +46,9 @@ export const formUserAkun = {
     username: '',
     password: '',
 }
+
+export const formBanding = {
+    id: null,
+    tanggal: '',
+    jumlah: '',
+}

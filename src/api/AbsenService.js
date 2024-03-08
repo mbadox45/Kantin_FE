@@ -34,4 +34,8 @@ export default new class AbsenService{
     getPengunjungKantin(start, end){
         return http.get(`v1/api/rekap/user/${start}/${end}`);
     }
+    getVisitor(start, end){
+        return http.get(`v1/api/visitor/all/${start}/${end}`);
+    }
+    
 }
