@@ -68,7 +68,6 @@
                 }
             }
             list_user_akses.value = list
-            console.log(jenis_user.value,list)
         } catch (error) {
             list_user_akses.value = []
         }
@@ -149,6 +148,19 @@
         if (status == 'add') {
             header_dialog.value = 'Form Akses User';
             reset_form()
+            messages.value = [];
+        } else if (status == 'delete') {
+            header_dialog.value = 'Delete Akses User';
+            form.value = {
+                id: data.id,
+                user_id: data.user_id,
+                rfid_code: data.rfid_code,
+                nama: data.nama,
+                instansi: data.instansi,
+                status: true,
+            };
+            console.log(form.value)
+            messages.value = [];
         } else {
             header_dialog.value = 'Edit RFID Card';
             form.value = {
@@ -174,6 +186,37 @@
                         response = await AksesService.createInternship(form.value)
                     } else {
                         response = await AksesService.createOutsource(form.value)
+                    }
+
+                    const load = response.data;
+                    if (load.code == 200) {
+                        messages.value = [
+                            { severity: 'success', content: 'Data berhasil ditambahkan.', id: count.value++ }
+                        ];
+                        setTimeout(function() {
+                            visible_dialog.value = false
+                            load_user()
+                        }, 2000);
+                    } else if (load.code == 201) {
+                        messages.value = [
+                            { severity: 'warn', content: load.msg, id: count.value++ }
+                        ];
+                    } else {
+                        messages.value = [
+                            { severity: 'error', content: load.msg, id: count.value++ }
+                        ];
+                        setTimeout(function() {
+                            visible_dialog.value = false
+                        }, 2000);
+                    }
+                } else if (status_form.value == 'delete') {
+                    let response;
+                    if (jenis_user.value == 'karyawan') {
+                        response = await AksesService.deleteKaryawan(form.value)
+                    } else if (jenis_user.value == 'internship') {
+                        response = await AksesService.deleteInternship(form.value)
+                    } else {
+                        response = await AksesService.deleteOutsource(form.value)
                     }
 
                     const load = response.data;
@@ -246,7 +289,7 @@
             <transition-group name="p-message" tag="div">
                 <Message v-for="msg of messages" :key="msg.id" :severity="msg.severity">{{ msg.content }}</Message>
             </transition-group>
-            <div class="flex w-full gap-2 my-3">
+            <div class="flex w-full gap-2 my-3" v-if="status_form != 'delete'">
                 <div class="w-full flex flex-column gap-2">
                     <div class="p-inputgroup">
                         <InputText v-model="form.rfid_code" id="input" class="w-full" :disabled="disabled_form == false ? true : false" placeholder="Silahkan cek kartu" autofocus @input="cek_status_penggunaa_kartu"/>
@@ -279,11 +322,34 @@
                     </div>
                 </div>
             </div>
-            <div class="flex justify-content-between gap-2">
-                <Button type="button" label="Reset" severity="warning" @click="reset_form"></Button>
+            <div class="flex w-full gap-2 my-3" v-else>
+                <div class="w-full flex align-items-center gap-3">
+                    <i class="pi pi-credit-card text-8xl"></i>
+                    <span>Akses Kartu akan di <span class="text-red-500 font-medium">non-aktifkan</span>, apabila akses user di hapus.</span>
+                </div>
+                <Divider layout="vertical" />
+                <div class="flex flex-column gap-2 w-full">
+                    <h6 class="text-center">Apakah anda ingin menghapus Akses User ini ?</h6>
+                    <div class="flex justify-content-between align-items-center gap-3">
+                        <label for="username" class="font-semibold w-6rem">Nama</label>
+                        <InputText id="username" v-model="form.nama" :disabled="true" class="w-full sm:w-20rem"/>
+                    </div>
+                    <div class="flex justify-content-between align-items-center gap-3">
+                        <label for="username" class="font-semibold w-6rem">User ID</label>
+                        <InputText id="username" v-model="form.user_id" :disabled="true" class="w-full sm:w-20rem"/>
+                    </div>
+                    <div class="flex justify-content-between align-items-center mb-5 gap-3">
+                        <label for="username" class="font-semibold w-6rem">Instansi</label>
+                        <InputText id="username" v-model="form.instansi" :disabled="true" class="w-full sm:w-20rem"/>
+                    </div>
+                </div>
+            </div>
+            <div :class="`flex ${status_form != 'delete' ? 'justify-content-between' : 'justify-content-end'} gap-2`">
+                <Button type="button" label="Reset" severity="warning" v-show="status_form != 'delete'" @click="reset_form"></Button>
                 <div class="flex gap-2">
                     <Button type="button" label="Cancel"  outlined severity="secondary" @click="visible_dialog = false"></Button>
-                    <Button type="button" label="Save" severity="success" :disabled="disabled_form" @click="post_data"></Button>
+                    <Button type="button" label="Save" severity="success" :disabled="disabled_form" @click="post_data" v-if="status_form != 'delete'"></Button>
+                    <Button type="button" label="Delete" severity="danger" @click="post_data" v-else></Button>
                 </div>
             </div>
         </Dialog>
@@ -358,7 +424,7 @@
                             <template #body="{ data }">
                                 <div class="flex justify-content-center align-items-center gap-2">
                                     <Button icon="pi pi-pencil" severity="warning" size="small" text rounded @click="show_dialog('edit', data)"/>
-                                    <!-- <Button icon="pi pi-trash" severity="danger" size="small" text rounded @click="post_data(data)"/> -->
+                                    <Button icon="pi pi-trash" severity="danger" size="small" text rounded @click="show_dialog('delete', data)"/>
                                 </div>
                             </template>
                         </Column>

@@ -26,6 +26,9 @@ export default new class AksesService{
     updateKaryawan(data){
         return http.post('v1/api/internal/edit-karyawan', data);
     }
+    deleteKaryawan(data){
+        return http.post('v1/api/internal/delete-karyawan', data);
+    }
 
     // Akses Outsource
     getAllOutsource(){
@@ -37,6 +40,9 @@ export default new class AksesService{
     updateOutsource(data){
         return http.post('v1/api/outsource/edit-karyawan', data);
     }
+    deleteOutsource(data){
+        return http.post('v1/api/outsource/delete-karyawan', data);
+    }
 
     // Akses Internship
     getAllInternship(){
@@ -47,5 +53,8 @@ export default new class AksesService{
     }
     updateInternship(data){
         return http.post('v1/api/internship/edit-karyawan', data);
+    }
+    deleteInternship(data){
+        return http.post('v1/api/internship/delete-karyawan', data);
     }
 }
