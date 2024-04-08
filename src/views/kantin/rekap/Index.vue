@@ -17,7 +17,7 @@
 
     // Variable
     const jenis_user = ref('banding');
-    const active = ref(0);
+    const active = ref(1);
     const visible_dialog = ref(false);
     const header_dialog = ref('');
     const list_user_akses = ref([])
