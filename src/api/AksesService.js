@@ -1,60 +1,37 @@
 import http from './http-common'
+import httpAuth from './http-auth'
 
 export default new class AksesService{
 
     // Akses Kartu
     getAllRfidCard(){
-        return http.get(`v1/api/akses/kartu-all/`);
+        return httpAuth.get(`v1/master-kartu/`);
     }
-    checkPenggunaRfidCard(data){
-        return http.post('v1/api/akses/cek', data);
+    // checkPenggunaRfidCard(data){
+    //     return http.post('v1/api/akses/cek', data);
+    // }
+    postRfidCard(data){
+        return httpAuth.post('v1/master-kartu', data);
     }
-    createRfidCard(data){
-        return http.post('v1/api/akses/tambah-kartu', data);
-    }
-    updateRfidCard(data){
-        return http.post('v1/api/akses/edit-kartu', data);
-    }
-
-    // Akses Karyawan
-    getAllKaryawan(){
-        return http.get(`v1/api/internal/karyawan-all/`);
-    }
-    createKaryawan(data){
-        return http.post('v1/api/internal/tambah-karyawan', data);
-    }
-    updateKaryawan(data){
-        return http.post('v1/api/internal/edit-karyawan', data);
-    }
-    deleteKaryawan(data){
-        return http.post('v1/api/internal/delete-karyawan', data);
+    putRfidCard(id,data){
+        return httpAuth.put(`v1/master-kartu/${id}`, data);
     }
 
-    // Akses Outsource
-    getAllOutsource(){
-        return http.get(`v1/api/outsource/karyawan-all/`);
+    // Master Bagian
+    getAllBagian(){
+        return httpAuth.get(`v1/master-bagian/`);
     }
-    createOutsource(data){
-        return http.post('v1/api/outsource/tambah-karyawan', data);
+    getByIDBagian(id){
+        return httpAuth.get(`v1/master-bagian/${id}`);
     }
-    updateOutsource(data){
-        return http.post('v1/api/outsource/edit-karyawan', data);
+    createBagian(data){
+        return httpAuth.post('v1/master-bagian/', data);
     }
-    deleteOutsource(data){
-        return http.post('v1/api/outsource/delete-karyawan', data);
+    updateBagian(id, data){
+        return httpAuth.put(`v1/master-bagian/${id}`, data);
+    }
+    deleteBagian(id){
+        return httpAuth.delete(`v1/master-bagian/${id}`);
     }
 
-    // Akses Internship
-    getAllInternship(){
-        return http.get(`v1/api/internship/karyawan-all/`);
-    }
-    createInternship(data){
-        return http.post('v1/api/internship/tambah-karyawan', data);
-    }
-    updateInternship(data){
-        return http.post('v1/api/internship/edit-karyawan', data);
-    }
-    deleteInternship(data){
-        return http.post('v1/api/internship/delete-karyawan', data);
-    }
 }

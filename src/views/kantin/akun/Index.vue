@@ -8,6 +8,7 @@
     // API
     import UserService from '@/api/UserService';
     import {formUserAkun} from '@/api/DataVariable';
+    import {getAllUser, registerUser, updateUser, resetPasswordUser} from '@/controllers/userAkunController';
 
     // Variable
     const list_user_akses = ref([])
@@ -43,22 +44,12 @@
 
     const load_user = async() => {
         try {
-            let response;
-            response = await UserService.getUsers()
-            const load = response.data.data
-            const list = []
-            for (let i = 0; i < load.length; i++) {
-                list[i] = {
-                    id: load[i].id,
-                    email: load[i].email,
-                    jabatan: load[i].jabatan,
-                    roles: load[i].roles,
-                    name: load[i].name,
-                    active: load[i].active,
-                    username: load[i].username,
-                }
+            const response = await getAllUser()
+            if (response != null) {
+                list_user_akses.value = response
+            } else {
+                list_user_akses.value = []
             }
-            list_user_akses.value = list
         } catch (error) {
             list_user_akses.value = []
         }
@@ -68,11 +59,10 @@
         data_kartu.value = null
         form.value = {
             id: null,
-            name: '',
-            email: '',
-            roles: '',
-            jabatan: '-',
-            username: '',
+            name: null,
+            email: null,
+            roles: null,
+            status: true,
             password: 'rahasia123',
         };
         messages.value = [];
@@ -84,7 +74,7 @@
         if (resetpassword.value == true) {
             form.value.password = 'rahasia123'
         } else {
-            form.value.password = ''
+            form.value.password = null
         }
     }
 
@@ -99,37 +89,29 @@
                 id: data.id,
                 name: data.name,
                 email: data.email,
+                status: data.status == 'true' ? true : false,
                 roles: data.roles,
-                jabatan: '-',
-                username: data.username,
-                password: '',
             };
-            messages.value = [];
         } else {
             header_dialog.value = 'Delete Akun User';
             form.value = {
                 id: data.id,
-                name: '',
-                email: '',
-                roles: '',
-                jabatan: '',
-                username: '',
-                password: '',
+                name: data.name,
+                email: data.email,
+                status: data.status == 'true' ? true : false,
+                roles: data.roles,
             };
-            messages.value = [];
         }
+        messages.value = [];
         visible_dialog.value = true
     }
 
     const post_data = async () => {
         try {
-            if (form.value.name != '' && form.value.email != '' && form.value.roles != '' && form.value.jabatan != '' && form.value.username != '') {
+            if (form.value.name != null && form.value.email != null && form.value.roles != null) {
                 if (status_form.value == 'add') {
-                    let response;
-                    response = await UserService.addUser(form.value)
-
-                    const load = response.data;
-                    if (load.code == 200) {
+                    const response = await registerUser(form.value)
+                    if (response.status == true) {
                         messages.value = [
                             { severity: 'success', content: 'Data berhasil ditambahkan.', id: count.value++ }
                         ];
@@ -137,26 +119,16 @@
                             visible_dialog.value = false
                             load_user()
                         }, 2000);
-                    } else if (load.code == 201) {
-                        messages.value = [
-                            { severity: 'warn', content: load.msg, id: count.value++ }
-                        ];
                     } else {
                         messages.value = [
-                            { severity: 'error', content: load.msg, id: count.value++ }
+                            { severity: 'warn', content: response.messages, id: count.value++ }
                         ];
-                        setTimeout(function() {
-                            visible_dialog.value = false
-                        }, 2000);
                     }
-                } else {
-                    let response;
-                    response = await UserService.updateUser(form.value)
-                    
-                    const load = response.data;
-                    if (load.code == 200) {
+                } else if (status_form.value == 'edit') {
+                    const response = await updateUser(form.value.id,form.value)
+                    if (response.status == true) {
                         messages.value = [
-                            { severity: 'success', content: 'Data berhasil diupdate.', id: count.value++ }
+                            { severity: 'success', content: response.message, id: count.value++ }
                         ];
                         setTimeout(function() {
                             visible_dialog.value = false
@@ -164,39 +136,29 @@
                         }, 2000);
                     } else {
                         messages.value = [
-                            { severity: 'error', content: load.msg, id: count.value++ }
+                            { severity: 'warn', content: response.message, id: count.value++ }
+                        ];
+                    }
+                } else {
+                    const response = await resetPasswordUser(form.value.id,{password})
+                    if (response.status == true) {
+                        messages.value = [
+                            { severity: 'success', content: response.message, id: count.value++ }
                         ];
                         setTimeout(function() {
                             visible_dialog.value = false
+                            load_user()
                         }, 2000);
+                    } else {
+                        messages.value = [
+                            { severity: 'warn', content: response.message, id: count.value++ }
+                        ];
                     }
                 }
             } else {
-                if (status_form.value == 'delete') {
-                    const response = await UserService.deleteUser(form.value.id)
-                    
-                    const load = response.data;
-                    if (load.code == 200) {
-                        messages.value = [
-                            { severity: 'success', content: 'Data berhasil dihapus.', id: count.value++ }
-                        ];
-                        setTimeout(function() {
-                            visible_dialog.value = false
-                            load_user()
-                        }, 2000);
-                    } else {
-                        messages.value = [
-                            { severity: 'error', content: load.msg, id: count.value++ }
-                        ];
-                        setTimeout(function() {
-                            visible_dialog.value = false
-                        }, 2000);
-                    }
-                } else {
-                    messages.value = [
-                        { severity: 'warn', content: 'Silahkan lengkapi data anda.', id: count.value++ }
-                    ];
-                }
+                messages.value = [
+                    { severity: 'warn', content: 'Silahkan lengkapi data anda.', id: count.value++ }
+                ];
             }
         } catch (error) {
             messages.value = [
@@ -229,32 +191,19 @@
                         <Dropdown v-model="form.roles" :options="list_jenis_user" optionLabel="name" optionValue="code" placeholder="Roles" class="w-full md:w-full"/>
                     </div>
                     <div class="flex justify-content-between align-items-center mb-2 gap-3">
-                        <label for="jabatan" class="font-semibold w-8rem">Jabatan <span class="text-red-500">*</span></label>
-                        <InputText id="jabatan" v-model="form.jabatan" disabled class="w-full sm:w-full"/>
-                    </div>
-                    <div class="flex justify-content-between align-items-center gap-3">
-                        <label for="username" class="font-semibold w-8rem">Username <span class="text-red-500">*</span></label>
-                        <InputText id="username" v-model="form.username" placeholder="Username" class="w-full sm:w-full"/>
-                    </div>
-                    <Divider/>
-                    <div class="flex justify-content-between align-items-center gap-3">
-                        <label for="password" class="font-semibold w-8rem">Password <span class="text-red-500">*</span></label>
-                        <div class="p-inputgroup">
-                            <InputText id="password" :type="setpassword == true ? 'password' : 'text'" disabled v-model="form.password" placeholder="****" class="w-full sm:w-full"/>
-                            <Button :class="`${status_form == 'add' ? 'border-round-right' : ''}`" :icon="`pi pi-eye${setpassword == true ? '' : '-slash'}`" severity="secondary" @click="setpassword = !setpassword"/>
-                            <Button :class="`${status_form == 'add' ? 'hidden' : 'block'}`" :icon="`${resetpassword == true ? 'pi pi-check' : 'pi pi-refresh'}`" :severity="`${resetpassword == true ? 'info' : 'warning'}`" @click="reset_Password"/>
-                        </div>
+                        <label for="status" class="font-semibold w-8rem">Status <span class="text-red-500">*</span></label>
+                        <ToggleButton id="status" v-model="form.status" onIcon="pi pi-check" offIcon="pi pi-times text-white" onLabel="Active" offLabel="Non Active" invalid class="w-full text-white" :class="`${form.status == true ? 'bg-cyan-500' : 'bg-red-500'}`" aria-label="Confirmation" />
                     </div>
                 </div>
                 <div class="w-full text-center" v-else>
-                    <span class="font-medium uppercase">Apakah anda ingin <span class="text-red-500">hapus</span> akun user tersebut ?</span>
+                    <span class="font-medium uppercase">Apakah anda ingin <span class="text-red-500">reset password</span> akun user tersebut ?</span>
                 </div>
             </div>
-            <div :class="`flex ${status_form != 'delete' ? 'justify-content-between' : 'justify-content-center mt-5'} gap-2`">
-                <Button type="button" label="Reset" severity="warning" @click="reset_form" v-show="status_form != 'delete'"></Button>
+            <div :class="`flex w-full ${status_form != 'delete' ? 'justify-content-end' : 'justify-content-center mt-5'} gap-2`">
+                <!-- <Button type="button" label="Reset" severity="warning" @click="reset_form" v-show="status_form != 'delete'"></Button> -->
                 <div class="flex gap-2">
-                    <Button type="button" label="Cancel"  outlined severity="secondary" @click="visible_dialog = false"></Button>
-                    <Button type="button" :label="status_form != 'delete' ? 'Save' : 'Delete'" :severity="status_form != 'delete' ? 'success' : 'danger'" @click="post_data"></Button>
+                    <Button type="button" :label="status_form != 'delete' ? 'Cancel' : 'No'"  outlined severity="secondary" @click="visible_dialog = false"></Button>
+                    <Button type="button" :label="status_form != 'delete' ? 'Save' : 'Yes'" :severity="status_form != 'delete' ? 'success' : 'danger'" @click="post_data"></Button>
                 </div>
             </div>
         </Dialog>
@@ -282,10 +231,10 @@
                     </div>
                 </div>
                 <div class="w-full flex flex-column">
-                    <DataTable v-model:filters="filters" :value="list_user_akses" paginator :rows="10" :globalFilterFields="['name', 'email', 'username', 'roles']" tableStyle="min-width: 50rem">
+                    <DataTable v-model:filters="filters" :value="list_user_akses" paginator :rows="10" :globalFilterFields="['name', 'email', 'roles']" tableStyle="min-width: 50rem">
                         <Column header="Nama" sortable sortField="name">
                             <template #body="{ data }">
-                                <div class="flex align-items-center gap-2">
+                                <div :class="data.status == 'false' ? 'text-red-600' : ''" class="flex align-items-center gap-2">
                                     <i class="pi pi-user text-7xl"></i>
                                     <div class="flex flex-column gap-1">
                                         <small>{{ data.email }}</small>
@@ -294,16 +243,16 @@
                                 </div>
                             </template>
                         </Column>
-                        <Column header="Username" sortable sortField="username">
+                        <Column header="Email" sortable sortField="email">
                             <template #body="{ data }">
-                                <div class="flex align-items-center gap-2">
-                                    <span>{{ data.username }}</span>
+                                <div :class="data.status == 'false' ? 'text-red-600' : ''" class="flex align-items-center gap-2">
+                                    <span>{{ data.email }}</span>
                                 </div>
                             </template>
                         </Column>
                         <Column header="Roles" sortable sortField="roles">
                             <template #body="{ data }">
-                                <div class="flex align-items-center gap-2">
+                                <div :class="data.status == 'false' ? 'text-red-600' : ''" class="flex align-items-center gap-2">
                                     <strong class="uppercase">{{ data.roles }}</strong>
                                 </div>
                             </template>
@@ -311,8 +260,8 @@
                         <Column header="">
                             <template #body="{ data }">
                                 <div class="flex justify-content-center align-items-center gap-2">
-                                    <Button icon="pi pi-pencil" severity="warning" size="small" text rounded @click="show_dialog('edit', data)"/>
-                                    <Button icon="pi pi-trash" severity="danger" size="small" text rounded @click="show_dialog('delete', data)"/>
+                                    <Button icon="pi pi-pencil" severity="warning" v-tooltip.bottom="'Update User'" size="small" text rounded @click="show_dialog('edit', data)"/>
+                                    <Button icon="pi pi-refresh" v-tooltip.bottom="'Reset Password'" severity="success" size="small" text rounded @click="show_dialog('delete', data)"/>
                                 </div>
                             </template>
                         </Column>

@@ -2,10 +2,10 @@ import http from './http-auth'
 
 export default new class UserService{
     getUsers(){
-        return http.get('v1/auth/all');
+        return http.get('v1/auth');
     }
     getUsersID(id){
-        return http.get(`v1/auth/user/${id}`);
+        return http.get(`v1/auth/${id}`);
     }
     activeUser(id){
         return http.get(`user/active/${id}`);
@@ -14,11 +14,14 @@ export default new class UserService{
         return http.get(`reset-password/${id}`);
     }
 
-    addUser(data){
-        return http.post(`v1/auth/add`, data);
+    registerUser(data){
+        return http.post(`v1/auth/register`, data);
     }
-    updateUser(data){
-        return http.post(`v1/auth/update`, data);
+    updateUser(id,data){
+        return http.put(`v1/auth/${id}`, data);
+    }
+    changePasswordUser(id,data){
+        return http.put(`v1/auth/${id}/password`, data);
     }
     deleteUser(id){
         return http.delete(`v1/auth/delete/${id}`);

@@ -8,6 +8,7 @@
     // API
     import AksesService from '@/api/AksesService';
     import {formKartu} from '@/api/DataVariable';
+    import {getAllRfidCard, postRfidCard, putRfidCard} from '@/controllers/masterKartuController'
     // import { ProductService } from '@/service/ProductService';
 
     // Variable
@@ -40,29 +41,22 @@
 
     // Function
     onMounted(() => {
-        load_user()
+        loadData()
         // load_data()
     })
 
-    const load_user = async() => {
+    const loadData = async() => {
         try {
-            const response = await AksesService.getAllRfidCard()
-            const load = response.data.data
-            const list = []
-            for (let i = 0; i < load.length; i++) {
-                list[i] = {
-                    id: load[i].id,
-                    rfid_code: load[i].rfid_barcode,
-                    kategori: load[i].kategori,
-                    status: load[i].status,
+            const response = await getAllRfidCard()
+            if (response != null) {
+                if (jenis_user.value == null) {
+                    list_user_akses.value = response
+                } else {
+                    list_user_akses.value = response.filter(item => item.status == jenis_user.value)
                 }
-            }
-            if (jenis_user.value == null) {
-                list_user_akses.value = list
             } else {
-                list_user_akses.value = list.filter(item => item.status == jenis_user.value)
+                list_user_akses.value = []
             }
-            // console.log(list_user_akses.value)
         } catch (error) {
             list_user_akses.value = []
         }
@@ -70,8 +64,8 @@
 
     const reset_form = () => {
         form.value = {
-            rfid_code: '',
-            kategori: null,
+            nomor_kartu: '',
+            keterangan: null,
             status: true,
         };
         messages.value = [];
@@ -86,8 +80,8 @@
             header_dialog.value = 'Edit RFID Card';
             form.value = {
                 id: data.id,
-                rfid_code: data.rfid_code,
-                kategori: data.kategori,
+                nomor_kartu: data.nomor_kartu,
+                keterangan: data.keterangan,
                 status: data.status,
             };
             messages.value = [];
@@ -96,60 +90,48 @@
     }
 
     const post_data_input = async() => {
-        if (status_form.value == 'add') {
-            if (form.value.rfid_code != '' && form.value.kategori != null && form.value.kategori != null) {
-                const response = await AksesService.createRfidCard(form.value)
-                const load = response.data;
-                if (load.code == 200) {
-                    messages.value = [
-                        { severity: 'success', content: `Akses Kartu berhasil didaftarkan`, id: count.value++ }
-                    ];
-                    setTimeout(function() {
-                        visible_dialog.value = false
-                        load_user()
-                    }, 3000);
-                } else if (load.code == 201) {
-                    messages.value = [
-                        { severity: 'warn', content: 'Akses Kartu sudah terdaftar', id: count.value++ }
-                    ];
+        try {
+            if (form.value.nomor_kartu != null && form.value.keterangan != null && form.value.status != null) {
+                if (status_form.value == 'add') {
+                    const response = await postRfidCard(form.value)
+                    if (response.status == true) {
+                        messages.value = [
+                            { severity: 'success', content: `Akses Kartu berhasil didaftarkan`, id: count.value++ }
+                        ];
+                        setTimeout(function() {
+                            visible_dialog.value = false
+                            loadData()
+                        }, 2000);
+                    } else {
+                        messages.value = [
+                            { severity: 'warn', content: `${response.message}`, id: count.value++ }
+                        ];
+                    }
                 } else {
-                    messages.value = [
-                        { severity: 'error', content: `${load.msg}`, id: count.value++ }
-                    ];
-                    setTimeout(function() {
-                        visible_dialog.value = false
-                    }, 3000);
+                    const response = await putRfidCard(form.value.id, form.value)
+                    if (response.status == true) {
+                        messages.value = [
+                            { severity: 'success', content: `Akses Kartu berhasil diupdate`, id: count.value++ }
+                        ];
+                        setTimeout(function() {
+                            visible_dialog.value = false
+                            loadData()
+                        }, 2000);
+                    } else {
+                        messages.value = [
+                            { severity: 'warn', content: `${response.message}`, id: count.value++ }
+                        ];
+                    }
                 }
             } else {
                 messages.value = [
                     { severity: 'warn', content: 'Silahkan lengkapi data anda.', id: count.value++ }
                 ];
             }
-        } else if (status_form.value == 'edit') {
-            if (form.value.rfid_code != '' && form.value.kategori != null && form.value.kategori != null) {
-                const response = await AksesService.updateRfidCard(form.value)
-                const load = response.data;
-                if (load.code == 200) {
-                    messages.value = [
-                        { severity: 'success', content: `Akses Kartu berhasil diupdate`, id: count.value++ }
-                    ];
-                    setTimeout(function() {
-                        visible_dialog.value = false
-                        load_user()
-                    }, 3000);
-                } else {
-                    messages.value = [
-                        { severity: 'error', content: `${load.msg}`, id: count.value++ }
-                    ];
-                    setTimeout(function() {
-                        visible_dialog.value = false
-                    }, 3000);
-                }
-            } else {
-                toast.add({ severity: 'warn', summary: 'Warning', detail: `Silahkan lengkapi data anda.`, life: 3000 });
-            }
-        } else {
-            
+        } catch (error) {
+            messages.value = [
+                { severity: 'error', content: `Terjadi kesalahan sistem, silahkan dicoba beberapa saat lagi.`, id: count.value++ }
+            ];
         }
     }
 
@@ -163,28 +145,33 @@
             <small class="flex align-items-center">Administrator <strong class="mx-2">/</strong> <i class="mx-2 text-sm pi pi-th-large"></i>Akses Kartu</small>
         </div>
 
-        <Dialog v-model:visible="visible_dialog" modal :header="header_dialog" :style="{ width: '500px' }">
+        <Dialog v-model:visible="visible_dialog" modal :header="header_dialog" :style="{ width: '600px' }">
             <transition-group name="p-message" tag="div">
                 <Message v-for="msg of messages" :key="msg.id" :severity="msg.severity">{{ msg.content }}</Message>
             </transition-group>
-            <div class="flex justify-content-between align-items-center gap-3 my-3">
-                <label for="username" class="font-semibold w-6rem">RFID</label>
-                <InputText id="username" v-model="form.rfid_code" class="w-full sm:w-20rem" autocomplete="off" />
-            </div>
-            <div class="flex justify-content-between align-items-center gap-3 mb-3">
-                <label for="kategori" class="font-semibold w-6rem">Kategori</label>
-                <Dropdown id="kategori" v-model="form.kategori" :options="list_kategori" optionLabel="name" optionValue="code" placeholder="Kategori" class="w-full md:w-20rem"/>
-            </div>
-            <div class="flex justify-content-between align-items-center gap-3 mb-5">
-                <label for="status" class="font-semibold w-6rem">Status</label>
-                <ToggleButton id="status" v-model="form.status" onIcon="pi pi-check" offIcon="pi pi-times text-white" onLabel="Active" offLabel="Non Active" invalid class="w-full sm:w-20rem text-white" :class="`${form.status == true ? 'bg-cyan-500' : 'bg-red-500'}`" aria-label="Confirmation" />
-            </div>
-            <div class="flex justify-content-between gap-2">
-                <Button type="button" label="Reset" severity="warning" @click="reset_form"></Button>
-                <div class="flex gap-2">
-                    <Button type="button" label="Cancel"  outlined severity="secondary" @click="visible_dialog = false"></Button>
-                    <Button type="button" label="Save" severity="success" @click="post_data_input"></Button>
+            <div class="flex flex-column gap-3">
+                <div class="flex gap-3 align-items-center">
+                    <div class="flex flex-column justify-content-between w-full gap-1">
+                        <label for="username" class="font-semibold w-6rem">RFID</label>
+                        <InputText id="username" v-model="form.nomor_kartu" class="w-full" autocomplete="off" />
+                    </div>
+                    <div class="flex flex-column justify-content-between w-full gap-1">
+                        <label for="status" class="font-semibold w-6rem">Status</label>
+                        <ToggleButton id="status" v-model="form.status" onIcon="pi pi-check" offIcon="pi pi-times text-white" onLabel="Active" offLabel="Non Active" invalid class="w-full text-white" :class="`${form.status == true ? 'bg-cyan-500' : 'bg-red-500'}`" aria-label="Confirmation" />
+                    </div>
                 </div>
+                <div class="flex flex-column justify-content-between w-full gap-1">
+                    <label for="kategori" class="font-semibold w-6rem">Keterangan</label>
+                    <InputText id="kategori" v-model="form.keterangan" class="w-full" autocomplete="off" />
+                </div>
+                <div class="flex justify-content-between gap-2">
+                    <Button type="button" label="Reset" severity="warning" @click="reset_form"></Button>
+                    <div class="flex gap-2">
+                        <Button type="button" label="Cancel"  outlined severity="secondary" @click="visible_dialog = false"></Button>
+                        <Button type="button" label="Save" severity="success" @click="post_data_input"></Button>
+                    </div>
+                </div>
+
             </div>
         </Dialog>
 
@@ -200,7 +187,7 @@
                             <span class="p-inputgroup-addon">
                                 <i class="pi pi-cog"></i>
                             </span>
-                            <Dropdown v-model="jenis_user" :options="list_jenis_user" optionLabel="name" optionValue="code" placeholder="Jenis User" class="w-full md:w-20rem" @change="load_user"/>
+                            <Dropdown v-model="jenis_user" :options="list_jenis_user" optionLabel="name" optionValue="code" placeholder="Jenis User" class="w-full md:w-20rem" @change="loadData"/>
                             <!-- <InputText v-model="start" placeholder="Jenis User"/> -->
                         </div>
                     </div>
@@ -215,22 +202,22 @@
                 </div>
                 <div class="w-full flex flex-column">
                     <DataTable v-model:filters="filters" :value="list_user_akses" paginator :rows="10"
-                        :globalFilterFields="['rfid_code', 'kategori']" tableStyle="min-width: 50rem">
-                        <Column header="RFID Card" sortable sortField="rfid_code">
+                        :globalFilterFields="['nomor_kartu', 'keterangan']" tableStyle="min-width: 50rem">
+                        <Column header="RFID Card" sortable sortField="nomor_kartu">
                             <template #body="{ data }">
                                 <div class="flex align-items-center gap-2">
                                     <i class="pi pi-credit-card text-7xl"></i>
                                     <div class="flex flex-column gap-1">
                                         <!-- <small class="font-bold">{{ data.id_kartu }}</small> -->
-                                        <strong>{{ data.rfid_code }}</strong>
+                                        <strong>{{ data.nomor_kartu }}</strong>
                                     </div>
                                 </div>
                             </template>
                         </Column>
-                        <Column header="Kategori" sortable sortField="kategori">
+                        <Column header="Keterangan" sortable sortField="keterangan">
                             <template #body="{ data }">
                                 <div class="flex align-items-center gap-2">
-                                    <span class="uppercase">{{ data.kategori }}</span>
+                                    <span class="uppercase">{{ data.keterangan }}</span>
                                 </div>
                             </template>
                         </Column>

@@ -73,8 +73,8 @@ const tokenChecker = () => {
                 localStorage.removeItem('usertoken');
                 localStorage.removeItem('payload');
                 localStorage.removeItem('roles');
-                window.location.replace("http://192.168.1.223:8085/auth/login");
-                // router.push('/auth/login');
+                // window.location.replace("http://192.168.1.223:8085/auth/login");
+                router.push('/auth/login');
                 console.log('expired');
             } else {
                 console.log('Token activated');

@@ -1,77 +1,104 @@
 <script setup>
 // Vue Component
-import { useLayout } from '@/layout/composables/layout';
 import { ref, computed } from 'vue';
+// import { useLayout } from '@/layout/composables/layout';
 import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 
+const toast = useToast();
+const router = useRouter();
+
 // HTML Components
-import AppConfig from '@/layout/AppConfig.vue';
+// import AppConfig from '@/layout/AppConfig.vue';
 
 // API
 import AuthService from '@/api/AuthService';
-import { URL_WEB } from '@/api/env';
+// import { URL_WEB } from '@/api/env';
 
-const toast = useToast();
-const router = useRouter();
-const { layoutConfig } = useLayout();
+// const { layoutConfig } = useLayout();
 const email = ref(null);
 const password = ref(null);
 const checked = ref(false);
 const isLoading = ref(false);
 
-const logoUrl = computed(() => {
-    return `layout/images/${layoutConfig.darkTheme.value ? 'logo-white' : 'logo-dark'}.svg`;
-});
+// const logoUrl = computed(() => {
+//     return `layout/images/${layoutConfig.darkTheme.value ? 'logo-white' : 'logo-dark'}.svg`;
+// });
 
 const link = (item) => {
     router.push(`/${item}`);
 }
 
-const onSubmit = (e) => {
-    e.preventDefault();
-    if (email.value && password.value) {
-        const post = {
-            username: email.value,
-            password: password.value,
-        }
-        isLoading.value = true
-        try {
-            AuthService.postSignIn(post).then(res => {
-                const load = res.data;
-                if (load.code == 200) {
-                    toast.add({ severity: 'success', summary: 'Successfully', detail: `Login successfully`, life: 3000 });
-                    const token = load.data.accessToken;
-                    const data = load.data.user;
-                    const roles = data.roles;
-                    const payload = {
-                        id: data.id,
-                        name: data.name,
-                        email: data.email,
-                        type: roles,
-                    }
-                    console.log(payload);
-                    localStorage.setItem('roles', roles);
-                    localStorage.setItem('usertoken', token);
-                    localStorage.setItem('payload', JSON.stringify(payload));
-                    window.location.replace(`${URL_WEB}beranda`);
-                    // console.log(load)
-                } else {
-                    toast.add({ severity: 'warn', summary: 'Attention', detail: 'The password or email you entered is incorrect, please try again', life: 3000 });
-                    console.log(load);
+const onSubmit = async() => {
+    isLoading.value = false
+    try {
+        if (email.value != null && password.value != null) {
+            const post = {
+                // username: email.value,
+                email: email.value,
+                password: password.value,
+            }
+            isLoading.value = true
+            const response = await AuthService.postSignIn(post)
+            const load = response.data
+            // console.log(load)
+            if (load.status == true) {
+                toast.add({ severity: 'success', summary: 'Successfully', detail: `Login successfully`, life: 3000 });
+                const token = load.token
+                const user = load.user
+                const roles = (user.roles).toString().toLowerCase();
+                const payload = {
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    type: roles,
                 }
-            }).catch(error => {
-                console.error(error.response.status);
-                toast.add({ severity: 'warn', summary: 'Attention', detail: 'The password or email you entered is incorrect, please try again', life: 3000 });
-            })
-        } catch (error) {
-            toast.add({ severity: 'danger', summary: 'Attention', detail: 'Invalid process, please contact the ICT team', life: 3000 });
-            // console.error(error.response.status);
-        } finally {
+                localStorage.setItem('roles', roles);
+                localStorage.setItem('usertoken', token);
+                localStorage.setItem('payload', JSON.stringify(payload));
+                setTimeout(function () {
+                    router.push('/beranda');
+                    location.reload(true);
+                }, 3000);
+            } else {
+                toast.add({ severity: 'warn', summary: 'Attention', detail: 'Tidak Berhasil', life: 3000 });
+            }
+            // AuthService.postSignIn(post).then(res => {
+            //     const load = res.data;
+            //     // console.log
+            //     if (load.code == 200) {
+            //         toast.add({ severity: 'success', summary: 'Successfully', detail: `Login successfully`, life: 3000 });
+            //         const token = load.data.accessToken;
+            //         const data = load.data.user;
+            //         const roles = data.roles;
+            //         const payload = {
+            //             id: data.id,
+            //             name: data.name,
+            //             email: data.email,
+            //             type: roles,
+            //         }
+            //         console.log(payload);
+            //         localStorage.setItem('roles', roles);
+            //         localStorage.setItem('usertoken', token);
+            //         localStorage.setItem('payload', JSON.stringify(payload));
+            //         window.location.replace(`${URL_WEB}beranda`);
+            //         // console.log(load)
+            //     } else {
+            //         toast.add({ severity: 'warn', summary: 'Attention', detail: 'The password or email you entered is incorrect, please try again', life: 3000 });
+            //         console.log(load);
+            //     }
+            // }).catch(error => {
+            //     console.error(error.response.status);
+            //     toast.add({ severity: 'warn', summary: 'Attention', detail: 'The password or email you entered is incorrect, please try again', life: 3000 });
+            // })
+            isLoading.value = false
+        } else {
+            toast.add({ severity: 'warn', summary: 'Attention', detail: 'Please complete the data', life: 3000 });
             isLoading.value = false
         }
-    } else {
-        toast.add({ severity: 'warn', summary: 'Attention', detail: 'Please complete the data', life: 3000 });
+    } catch (error) {
+        toast.add({ severity: 'danger', summary: 'Attention', detail: 'Error', life: 3000 });
+        isLoading.value = false
     }
 };
 </script>
@@ -95,12 +122,17 @@ const onSubmit = (e) => {
             <Divider layout="vertical" class="hidden md:block"/>
             <div class="w-full shadow-5 py-6 px-5 md:px-6 sm:px-4 bg-white" style="border-radius: 40px">
 
-                <form @submit="onSubmit">
-                    <label for="email1" class="block text-900 text-xl font-medium mb-2">Username</label>
-                    <InputText id="email1" placeholder="Username" class="w-full mb-5" style="padding: 1rem" v-model="email" autocomplete="off" />
+                <form @submit.prevent="onSubmit">
+                    <label for="email1" class="block text-900 text-xl font-medium mb-2">Email</label>
+                    <InputText id="email1" placeholder="Email" type="email" class="w-full mb-5" style="padding: 1rem" v-model="email" autocomplete="off" />
 
                     <label for="password1" class="block text-900 font-medium text-xl mb-2">Password</label>
-                    <Password id="password1" v-model="password" placeholder="Password" :feedback="false" :toggleMask="true" class="w-full mb-3" inputClass="w-full" inputStyle="padding:1rem"></Password>
+                    <div class="p-inputgroup w-full mb-3">
+                        <InputText placeholder="Password" v-model="password" :type="`${checked == true ? 'text' : 'password'}`"/>
+                        <Button :icon="`${checked == true ? 'pi pi-eye-slash' : 'pi pi-eye'}`" severity="secondary" @click="checked = !checked" />
+                    </div>
+                    <!-- <InputText id="email1" placeholder="Username" class="w-full mb-5" style="padding: 1rem" v-model="email" autocomplete="off" />
+                    <Password id="password1" v-model="password" placeholder="Password" :feedback="false" :toggleMask="true" class="w-full mb-3" inputClass="w-full" inputStyle="padding:1rem"></Password> -->
 
                     <div class="flex align-items-center justify-content-between mb-5 gap-5">
                         <div class="flex align-items-center">

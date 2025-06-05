@@ -10,11 +10,14 @@
     // API
     import AksesService from '@/api/AksesService';
     import {formPenggunaKartu} from '@/api/DataVariable';
+    import {getAllUserKantin, cekKartu, postUserKantin, putUserKantin, deleteUserKantin} from '@/controllers/userKantinController';
+    import {getAllBagian} from '@/controllers/masterBagianController';
     // import { ProductService } from '@/service/ProductService';
 
     // Variable
     const jenis_user = ref('karyawan');
     const list_user_akses = ref([])
+    const listBagian = ref([])
     const list_jenis_user = ref([
         { name: 'Karyawan', code: 'karyawan' },
         { name: 'Outsource', code: 'outsource' },
@@ -32,6 +35,15 @@
     const kategori_user = ref(null)
     const header_dialog = ref('');
     const loading_cek_kartu = ref(null)
+    const formKartu = ref({
+        rfid_code:null
+    })
+    const dataChecking = ref({
+        id: null,
+        nomor_kartu: null,
+        status_kartu: null,
+        nama: null,
+    })
 
 
     const filters = ref(
@@ -42,110 +54,96 @@
 
     // Function
     onMounted(() => {
-        load_user()
+        loadData()
     })
 
-    const load_user = async() => {
+    const loadData = async() => {
         try {
-            let response;
-            if (jenis_user.value == 'karyawan') {
-                response = await AksesService.getAllKaryawan()
-            } else if (jenis_user.value == 'outsource') {
-                response = await AksesService.getAllOutsource()
+            const response = await getAllUserKantin()
+            if (response != null) {
+                list_user_akses.value = response
             } else {
-                response = await AksesService.getAllInternship()
+                list_user_akses.value = []
             }
-            const load = response.data.data
-            const list = []
-            for (let i = 0; i < load.length; i++) {
-                list[i] = {
-                    id: load[i].id,
-                    user_id: jenis_user.value == 'karyawan' ? load[i].nrk : load[i].barcode,
-                    rfid_code: jenis_user.value == 'karyawan' ? load[i].rfid : load[i].barcode,
-                    nama: load[i].nama,
-                    instansi: jenis_user.value == 'karyawan' ? 'PT Industri Nabati Lestari' : load[i].instansi,
-                    status: load[i].status,
-                }
-            }
-            list_user_akses.value = list
         } catch (error) {
             list_user_akses.value = []
         }
     }
 
-    const cek_status_penggunaa_kartu = () => {
+    const loadBagian = async() => {
         try {
-            const input = form.value.rfid_code.toString()
-            if (input != '' && input.length > 8) {
-                loading_cek_kartu.value = 'Loading...'
-                setTimeout(async function (){
-                    let test;
-                    if (input.length > 8) {
-                        const response = await AksesService.checkPenggunaRfidCard({rfid_code:form.value.rfid_code})
-                        const load = response.data
-                        if (load.code == 200) {
-                            data_kartu.value = {
-                                nama:load.data.nama,
-                                status:load.data.status,
-                            }
-                            // Form
-                            if (load.data.nama != 'Belum ada') {
-                                form.value.id = load.data.id;
-                                form.value.user_id = load.kategori == 'karyawan' ? load.data.nrk : load.data.barcode;
-                                form.value.nama = load.data.nama;
-                                form.value.instansi = load.kategori == 'karyawan' ? 'PT Industri Nabati Lestari' : load.data.instansi;
-                                form.value.status = load.data.status;
-                                status_form.value = 'edit';
-                            } else {
-                                form.value.user_id = load.kategori == 'karyawan' ? '' : form.value.rfid_code;
-                                form.value.nama = '';
-                                form.value.instansi = load.kategori == 'karyawan' ? 'PT Industri Nabati Lestari' : '';
-                                status_form.value = 'add';
-                            }
-
-                            kategori_user.value = load.kategori
-                            loading_cek_kartu.value = null
-                            disabled_form.value = false
-                        } else {
-                            data_kartu.value = {
-                                nama:load.data,
-                                status:false,
-                            }
-                            loading_cek_kartu.value = null
-                        }
-                    } 
-                    else {
-                        data_kartu.value = null
-                        loading_cek_kartu.value = null
-                    }
-                    console.log(input)
-                }, 1000);
+            const response = await getAllBagian()
+            if (response != null) {
+                listBagian.value = response
             } else {
-                reset_form()
+                listBagian.value = []
             }
         } catch (error) {
+            listBagian.value = []
+        }
+    }
+
+    const loadCheckKartu = async() => {
+        loading_cek_kartu.value = 'Loading...'
+        try {
+            const input = formKartu.value.rfid_code.toString() 
+            const response = await cekKartu({nomor_kartu:input})
+            if (response.status == true) {
+                const data = response.data;
+                dataChecking.value.id = data.id
+                dataChecking.value.nomor_kartu = data.nomor_kartu
+                dataChecking.value.status_kartu = data.status_kartu
+                form.value.kartu_id = data.id
+                if (data.digunakan_oleh_user == true) {
+                    dataChecking.value.nama = data.user_kantin.nama
+                    if (status_form.value == 'edit') {
+                        disabled_form.value = false
+                    } else {
+                        disabled_form.value = true
+                    }
+                } else {
+                    dataChecking.value.nama = "Belum digunakan"
+                    disabled_form.value = false
+                }
+            } else {
+                dataChecking.value.status_kartu = false
+                dataChecking.value.nama = "Kartu tidak terdaftar"
+                disabled_form.value = true
+            }
             loading_cek_kartu.value = null
-            data_kartu.value = null
+        } catch (error) {
+            loading_cek_kartu.value = null
+            dataChecking.value.status_kartu = false
+            dataChecking.value.nama = "Kartu tidak terdaftar"
+            disabled_form.value = true
         }
     }
 
     const reset_form = () => {
         data_kartu.value = null
         form.value = {
-            user_id: '',
             id: null,
-            rfid_code: '',
-            nama: '',
-            instansi: '',
-            status: true,
+            nrk: null,
+            nama: null,
+            jabatan: null,
+            bagian: null,
+            kartu_id: null,
         };
         messages.value = [];
         disabled_form.value = true
+        dataChecking.value = {
+            id: null,
+            nomor_kartu: null,
+            status_kartu: null,
+            nama: null,
+        }
     }
 
     const show_dialog = (status,data) => {
         status_form.value= status
+        loadBagian()
         if (status == 'add') {
+            formKartu.value.rfid_code = null
             header_dialog.value = 'Form Akses User';
             reset_form()
             messages.value = [];
@@ -153,22 +151,29 @@
             header_dialog.value = 'Delete Akses User';
             form.value = {
                 id: data.id,
-                user_id: data.user_id,
-                rfid_code: data.rfid_code,
                 nama: data.nama,
-                instansi: data.instansi,
-                status: true,
+                nrk: data.nrk,
+                jabatan: data.jabatan,
+                bagian: data.bagian,
+                kartu_id: data.kartu_id,
             };
-            console.log(form.value)
             messages.value = [];
         } else {
+            // Bagian pengecekan Kartu
+            disabled_form.value = false
+            formKartu.value.rfid_code = data.kartu.nomor_kartu
+            dataChecking.value.nomor_kartu = data.kartu.nomor_kartu
+            dataChecking.value.status_kartu = data.kartu.status
+            dataChecking.value.nama = data.nama
+            // Bagian form user
             header_dialog.value = 'Edit RFID Card';
             form.value = {
-                user_id: data.user_id,
-                rfid_code: '',
-                nama: '',
-                instansi: '',
-                status: true,
+                id: data.id,
+                nama: data.nama,
+                nrk: data.nrk,
+                jabatan: data.jabatan,
+                bagian: data.bagian,
+                kartu_id: data.kartu_id,
             };
             messages.value = [];
         }
@@ -177,95 +182,51 @@
 
     const post_data = async () => {
         try {
-            if (form.value.user_id != '' && form.value.rfid_code != '' && form.value.nama != '' && form.value.instansi != '') {
+            if (form.value.nama != null && form.value.nrk != null && form.value.jabatan != null && form.value.kartu_id != null && form.value.bagian != null) {
                 if (status_form.value == 'add') {
-                    let response;
-                    if (kategori_user.value == 'karyawan') {
-                        response = await AksesService.createKaryawan(form.value)
-                    } else if (kategori_user.value == 'internship') {
-                        response = await AksesService.createInternship(form.value)
-                    } else {
-                        response = await AksesService.createOutsource(form.value)
-                    }
-
-                    const load = response.data;
-                    if (load.code == 200) {
+                    const response = await postUserKantin(form.value)
+                    if (response.status == true) {
                         messages.value = [
                             { severity: 'success', content: 'Data berhasil ditambahkan.', id: count.value++ }
                         ];
                         setTimeout(function() {
                             visible_dialog.value = false
-                            load_user()
+                            loadData()
                         }, 2000);
-                    } else if (load.code == 201) {
-                        messages.value = [
-                            { severity: 'warn', content: load.msg, id: count.value++ }
-                        ];
                     } else {
                         messages.value = [
-                            { severity: 'error', content: load.msg, id: count.value++ }
+                            { severity: 'warn', content: response.message, id: count.value++ }
                         ];
-                        setTimeout(function() {
-                            visible_dialog.value = false
-                        }, 2000);
                     }
-                } else if (status_form.value == 'delete') {
-                    let response;
-                    if (jenis_user.value == 'karyawan') {
-                        response = await AksesService.deleteKaryawan(form.value)
-                    } else if (jenis_user.value == 'internship') {
-                        response = await AksesService.deleteInternship(form.value)
-                    } else {
-                        response = await AksesService.deleteOutsource(form.value)
-                    }
-
-                    const load = response.data;
-                    if (load.code == 200) {
+                } else if (status_form.value == 'edit') {
+                    const response = await putUserKantin(form.value.id, form.value)
+                    if (response.status == true) {
                         messages.value = [
-                            { severity: 'success', content: 'Data berhasil ditambahkan.', id: count.value++ }
+                            { severity: 'success', content: 'Data berhasil di update.', id: count.value++ }
                         ];
                         setTimeout(function() {
                             visible_dialog.value = false
-                            load_user()
+                            loadData()
                         }, 2000);
-                    } else if (load.code == 201) {
-                        messages.value = [
-                            { severity: 'warn', content: load.msg, id: count.value++ }
-                        ];
                     } else {
                         messages.value = [
-                            { severity: 'error', content: load.msg, id: count.value++ }
+                            { severity: 'warn', content: response.message, id: count.value++ }
                         ];
-                        setTimeout(function() {
-                            visible_dialog.value = false
-                        }, 2000);
                     }
                 } else {
-                    let response;
-                    if (kategori_user.value == 'karyawan') {
-                        response = await AksesService.updateKaryawan(form.value)
-                    } else if (kategori_user.value == 'internship') {
-                        response = await AksesService.updateInternship(form.value)
-                    } else {
-                        response = await AksesService.updateOutsource(form.value)
-                    }
-                    
-                    const load = response.data;
-                    if (load.code == 200) {
+                    const response = await deleteUserKantin(form.value.id)
+                    if (response.status == true) {
                         messages.value = [
-                            { severity: 'success', content: 'Data berhasil diupdate.', id: count.value++ }
+                            { severity: 'success', content: 'Data berhasil dihapus.', id: count.value++ }
                         ];
                         setTimeout(function() {
                             visible_dialog.value = false
-                            load_user()
+                            loadData()
                         }, 2000);
                     } else {
                         messages.value = [
-                            { severity: 'error', content: load.msg, id: count.value++ }
+                            { severity: 'warn', content: response.message, id: count.value++ }
                         ];
-                        setTimeout(function() {
-                            visible_dialog.value = false
-                        }, 2000);
                     }
                 }
             } else {
@@ -292,17 +253,18 @@
             <div class="flex w-full gap-2 my-3" v-if="status_form != 'delete'">
                 <div class="w-full flex flex-column gap-2">
                     <div class="p-inputgroup">
-                        <InputText v-model="form.rfid_code" id="input" class="w-full" :disabled="disabled_form == false ? true : false" placeholder="Silahkan cek kartu" autofocus @input="cek_status_penggunaa_kartu"/>
-                        <Button icon="pi pi-refresh" id="input" severity="secondary" @click="() => {disabled_form = true; form.rfid_code = ''}"/>
+                        <InputText v-model="formKartu.rfid_code" id="input" class="w-full" placeholder="Silahkan cek kartu" autofocus/>
+                        <Button icon="pi pi-refresh" id="input" severity="secondary" @click="reset_form"/>
+                        <Button icon="pi pi-search" id="input" severity="info" v-tooltip.top="'Cek Status'" @click="loadCheckKartu"/>
                         <!-- <InputText v-model="start" placeholder="Jenis User"/> -->
                     </div>
                     <div class="flex gap-2 align-items-center w-full">
                         <i class="pi pi-credit-card text-8xl"></i>
                         <strong v-show="loading_cek_kartu != null">{{ loading_cek_kartu }}</strong>
-                        <div class="flex flex-column gap-2 w-full" v-if="data_kartu != null && loading_cek_kartu == null">
-                            <span class="flex justify-content-between">Status <strong :class="`${data_kartu.status == true ? 'text-green-500' : 'text-red-500'}`">{{data_kartu.status == true ? 'Aktif' : 'Tidak Aktif'}}</strong></span>
-                            <span class="flex justify-content-between">Kepemilikan <strong class="uppercase font-medium text-right">{{data_kartu.nama}}</strong></span>
-                            <span class="flex justify-content-between">Kategori <strong class="uppercase text-right">{{kategori_user}}</strong></span>
+                        <div class="flex flex-column gap-2 w-full" v-if="dataChecking.nama != null && loading_cek_kartu == null">
+                            <span class="flex justify-content-between">Status Kartu<strong :class="`${dataChecking.status_kartu == true ? 'text-green-500' : 'text-red-500'}`">{{dataChecking.status_kartu == true ? 'Aktif' : 'Tidak Aktif'}}</strong></span>
+                            <span class="flex justify-content-between">Kepemilikan <strong class="uppercase font-medium text-right">{{dataChecking.nama}}</strong></span>
+                            <!-- <span class="flex justify-content-between">Kategori <strong class="uppercase text-right">{{kategori_user}}</strong></span> -->
                         </div>
                     </div>
                 </div>
@@ -310,15 +272,19 @@
                 <div class="flex flex-column gap-2 w-full">
                     <div class="flex justify-content-between align-items-center gap-3">
                         <label for="username" class="font-semibold w-6rem">Nama</label>
-                        <InputText id="username" v-model="form.nama" :disabled="disabled_form" class="w-full sm:w-20rem"/>
+                        <InputText id="username" v-model="form.nama" :disabled="disabled_form" class="w-full"/>
                     </div>
                     <div class="flex justify-content-between align-items-center gap-3">
-                        <label for="username" class="font-semibold w-6rem">User ID</label>
-                        <InputText id="username" v-model="form.user_id" :disabled="disabled_form == true ? true : kategori_user == 'karyawan' ? false : true" class="w-full sm:w-20rem"/>
+                        <label for="nrk" class="font-semibold w-6rem">NRK</label>
+                        <InputText id="nrk" v-model="form.nrk" :disabled="disabled_form == true ? true : false" class="w-full"/>
                     </div>
-                    <div class="flex justify-content-between align-items-center mb-5 gap-3">
-                        <label for="username" class="font-semibold w-6rem">Instansi</label>
-                        <InputText id="username" v-model="form.instansi" :disabled="disabled_form == true ? true : kategori_user != 'karyawan' ? false : true" class="w-full sm:w-20rem"/>
+                    <div class="flex justify-content-between align-items-center gap-3">
+                        <label for="jabatan" class="font-semibold w-6rem">Jabatan</label>
+                        <InputText id="jabatan" v-model="form.jabatan" :disabled="disabled_form == true ? true : false" class="w-full"/>
+                    </div>
+                    <div class="flex justify-content-between align-items-center gap-3">
+                        <label for="bagian" class="font-semibold w-6rem">Bagian</label>
+                        <Dropdown v-model="form.bagian" :options="listBagian" optionLabel="nama" optionValue="nama" filter :disabled="disabled_form == true ? true : false" placeholder="Select a Division" class="w-full" />
                     </div>
                 </div>
             </div>
@@ -332,20 +298,23 @@
                     <h6 class="text-center">Apakah anda ingin menghapus Akses User ini ?</h6>
                     <div class="flex justify-content-between align-items-center gap-3">
                         <label for="username" class="font-semibold w-6rem">Nama</label>
-                        <InputText id="username" v-model="form.nama" :disabled="true" class="w-full sm:w-20rem"/>
+                        <InputText id="username" v-model="form.nama" :disabled="true" class="w-full"/>
                     </div>
                     <div class="flex justify-content-between align-items-center gap-3">
-                        <label for="username" class="font-semibold w-6rem">User ID</label>
-                        <InputText id="username" v-model="form.user_id" :disabled="true" class="w-full sm:w-20rem"/>
+                        <label for="username" class="font-semibold w-6rem">NRK</label>
+                        <InputText id="username" v-model="form.nrk" :disabled="true" class="w-full"/>
                     </div>
-                    <div class="flex justify-content-between align-items-center mb-5 gap-3">
-                        <label for="username" class="font-semibold w-6rem">Instansi</label>
-                        <InputText id="username" v-model="form.instansi" :disabled="true" class="w-full sm:w-20rem"/>
+                    <div class="flex justify-content-between align-items-center gap-3">
+                        <label for="username" class="font-semibold w-6rem">Jabatan</label>
+                        <InputText id="username" v-model="form.jabatan" :disabled="true" class="w-full"/>
+                    </div>
+                    <div class="flex justify-content-between align-items-center gap-3">
+                        <label for="username" class="font-semibold w-6rem">Bagian</label>
+                        <InputText id="username" v-model="form.bagian" :disabled="true" class="w-full"/>
                     </div>
                 </div>
             </div>
-            <div :class="`flex ${status_form != 'delete' ? 'justify-content-between' : 'justify-content-end'} gap-2`">
-                <Button type="button" label="Reset" severity="warning" v-show="status_form != 'delete'" @click="reset_form"></Button>
+            <div :class="`flex justify-content-end gap-2`">
                 <div class="flex gap-2">
                     <Button type="button" label="Cancel"  outlined severity="secondary" @click="visible_dialog = false"></Button>
                     <Button type="button" label="Save" severity="success" :disabled="disabled_form" @click="post_data" v-if="status_form != 'delete'"></Button>
@@ -367,18 +336,11 @@
                     <Button icon="pi pi-plus" label="Form Access" size="small" @click="show_dialog('add', null)"/>
                 </div>
                 <div class="flex justify-content-between align-items-center gap-3">
-                    <div class="">
-                        <div class="p-inputgroup">
-                            <span class="p-inputgroup-addon">
-                                <i class="pi pi-cog"></i>
-                            </span>
-                            <Dropdown v-model="jenis_user" :options="list_jenis_user" optionLabel="name" optionValue="code" placeholder="Jenis User" class="w-full md:w-20rem" @change="load_user"/>
-                            <!-- <InputText v-model="start" placeholder="Jenis User"/> -->
-                        </div>
+                    <div class="w-full">
                     </div>
-                    <div class="">
+                    <div class="w-full">
                         <div class="p-inputgroup">
-                            <InputText v-model="filters['global'].value" placeholder="Search" class="w-full md:w-20rem"/>
+                            <InputText v-model="filters['global'].value" placeholder="Search" class="w-full"/>
                             <span class="p-inputgroup-addon">
                                 <i class="pi pi-search"></i>
                             </span>
@@ -386,36 +348,36 @@
                     </div>
                 </div>
                 <div class="w-full flex flex-column">
-                    <DataTable v-model:filters="filters" :value="list_user_akses" paginator :rows="10" :globalFilterFields="['nama', 'id_user', 'rfid_code', 'instansi']" tableStyle="min-width: 50rem">
+                    <DataTable v-model:filters="filters" :value="list_user_akses" paginator :rows="10" :globalFilterFields="['nama', 'nrk', 'kartu.nomor_kartu', 'bagian']" tableStyle="min-width: 50rem">
                         <Column header="Nama" sortable sortField="nama">
                             <template #body="{ data }">
                                 <div class="flex align-items-center gap-2">
                                     <i class="pi pi-id-card text-7xl"></i>
                                     <div class="flex flex-column gap-1">
-                                        <small>{{ data.user_id }}</small>
+                                        <small>{{ data.nrk }}</small>
                                         <span class="uppercase">{{ data.nama }}</span>
                                     </div>
                                 </div>
                             </template>
                         </Column>
-                        <Column header="Kode RFID" sortable sortField="rfid_code">
+                        <Column header="Kode RFID" sortable sortField="kartu.nomor_kartu">
                             <template #body="{ data }">
                                 <div class="flex align-items-center gap-2">
-                                    <strong>{{ data.rfid_code }}</strong>
+                                    <strong>{{ data.kartu.nomor_kartu }}</strong>
                                 </div>
                             </template>
                         </Column>
-                        <Column header="Instansi" sortable sortField="instansi">
+                        <Column header="Bagian" sortable sortField="bagian">
                             <template #body="{ data }">
                                 <div class="flex align-items-center gap-2">
-                                    <span>{{ data.instansi }}</span>
+                                    <span>{{ data.bagian }}</span>
                                 </div>
                             </template>
                         </Column>
                         <Column header="Status">
                             <template #body="{ data }">
                                 <div class="flex align-items-center gap-2">
-                                    <i :title="data.status" class="pi pi-check text-green-500  font-semibold text-2xl" v-if="data.status == true"></i>
+                                    <i :title="data.status" class="pi pi-check text-green-500  font-semibold text-2xl" v-if="data.kartu.status == true"></i>
                                     <i :title="data.status" class="pi pi-times text-red-500  font-semibold text-2xl" v-else></i>
                                 </div>
                             </template>

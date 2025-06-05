@@ -11,7 +11,7 @@
     import moment from 'moment';
 
     // Components
-    import TblBanding from '@/views/kantin/rekap/components/TblBanding.vue';
+    // import TblBanding from '@/views/kantin/rekap/components/TblBanding.vue';
     import TblUser from '@/views/kantin/rekap/components/TblUser.vue';
     import TblVisitor from '@/views/kantin/rekap/components/TblVisitor.vue';
 
@@ -196,17 +196,17 @@
         <div class="flex justify-content-center align-items-center gap-3">
             <div class="w-full flex flex-column bg-white p-3 border-round shadow-2 gap-3">
                 <div class="flex flex-column md:flex-row justify-content-between align-items-center">
-                    <strong class="uppercase text-md font-medium"><i class="pi pi-list mr-3"></i>List Rekap</strong>
+                    <strong class="uppercase text-md font-medium"><i class="pi pi-list mr-3"></i>List Rekap {{ active == 1 ? 'Pengunjung' : 'Tamu' }}</strong>
                     <div class="flex justify-content-between gap-2">
-                        <button @click="active = 0" :class="`${active !== 0 ? 'bg-teal-500 text-white hover:bg-teal-700' : 'bg-white text-teal-500 hover:bg-teal-500 hover:text-white'} transition-all transition-ease-in-out transition-duration-400 shadow-2 border-round-sm px-3 py-2 border-none flex gap-2 align-items-center uppercase font-medium`"><strong :class="`px-1 bg-white text-teal-500 border-circle`">1</strong>Data Banding</button>
-                        <button @click="active = 1" :class="`${active !== 1 ? 'bg-teal-500 text-white hover:bg-teal-700' : 'bg-white text-teal-500 hover:bg-teal-500 hover:text-white'} transition-all transition-ease-in-out transition-duration-400 shadow-2 border-round-sm px-3 py-2 border-none flex gap-2 align-items-center uppercase font-medium`"><strong class="px-1 bg-white text-teal-500 border-circle">2</strong>kehadiran user</button>
-                        <button @click="active = 2" :class="`${active !== 2 ? 'bg-teal-500 text-white hover:bg-teal-700' : 'bg-white text-teal-500 hover:bg-teal-500 hover:text-white'} transition-all transition-ease-in-out transition-duration-400 shadow-2 border-round-sm px-3 py-2 border-none flex gap-2 align-items-center uppercase font-medium`"><strong class="px-1 bg-white text-teal-500 border-circle">3</strong>kehadiran visitor</button>
+                        <!-- <button @click="active = 0" :class="`${active !== 0 ? 'bg-teal-500 text-white hover:bg-teal-700' : 'bg-white text-teal-500 hover:bg-teal-500 hover:text-white'} transition-all transition-ease-in-out transition-duration-400 shadow-2 border-round-sm px-3 py-2 border-none flex gap-2 align-items-center uppercase font-medium`"><strong :class="`px-1 bg-white text-teal-500 border-circle`">1</strong>Data Banding</button> -->
+                        <button @click="active = 1" :class="`${active !== 1 ? 'bg-teal-500 text-white hover:bg-teal-700' : 'bg-white text-teal-500 hover:bg-teal-500 hover:text-white'} transition-all transition-ease-in-out transition-duration-400 shadow-2 border-round-sm px-3 py-2 border-none flex gap-2 align-items-center uppercase font-medium`"><strong class="px-1 bg-white text-teal-500 border-circle">1</strong>kehadiran user</button>
+                        <button @click="active = 2" :class="`${active !== 2 ? 'bg-teal-500 text-white hover:bg-teal-700' : 'bg-white text-teal-500 hover:bg-teal-500 hover:text-white'} transition-all transition-ease-in-out transition-duration-400 shadow-2 border-round-sm px-3 py-2 border-none flex gap-2 align-items-center uppercase font-medium`"><strong class="px-1 bg-white text-teal-500 border-circle">2</strong>kehadiran visitor</button>
                     </div>
                 </div>
                 <div class="w-full flex flex-column">
-                    <div v-show="active == 0">
+                    <!-- <div v-show="active == 0">
                         <tbl-banding/>
-                    </div>
+                    </div> -->
                     <div v-show="active == 1">
                         <tbl-user/>
                     </div>

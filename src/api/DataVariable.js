@@ -23,28 +23,27 @@ export const listAkses = [
 
 export const formKartu = {
     id: null,
-    rfid_code: '',
-    kategori: null,
+    nomor_kartu: null,
+    keterangan: null,
     status: true,
 }
 
 export const formPenggunaKartu = {
     id: null,
-    user_id: '',
-    rfid_code: '',
-    nama: '',
-    instansi: '',
-    status: true,
+    nrk: null,
+    nama: null,
+    jabatan: null,
+    bagian: null,
+    kartu_id: null,
 }
 
 export const formUserAkun = {
     id: null,
-    name: '',
-    email: '',
-    roles: '',
-    jabatan: '-',
-    username: '',
-    password: '',
+    name: null,
+    email: null,
+    roles: null,
+    status: null,
+    password: 'rahasia123',
 }
 
 export const formBanding = {
