@@ -68,6 +68,52 @@ const router = createRouter({
                         admin:true,
                     }
                 },
+                {
+                    path: '/shift-karyawan',
+                    name: 'shift-karyawan',
+                    component: () => import('@/views/kantin/shiftKaryawan/Index.vue'),
+                    meta:{
+                        requiresAuth: true,
+                        user:true,
+                        admin:true,
+                    }
+                },
+                {
+                    path: '/master-shift',
+                    name: 'master-shift',
+                    component: () => import('@/views/kantin/master/shift/Index.vue'),
+                    meta:{
+                        requiresAuth: true,
+                        admin:true,
+                    }
+                },
+                {
+                    path: '/master-ramadhan',
+                    name: 'master-ramadhan',
+                    component: () => import('@/views/kantin/master/ramadhan/Index.vue'),
+                    meta:{
+                        requiresAuth: true,
+                        admin:true,
+                    }
+                },
+                {
+                    path: '/master-waktu-makan',
+                    name: 'master-waktu-makan',
+                    component: () => import('@/views/kantin/master/makan/Index.vue'),
+                    meta:{
+                        requiresAuth: true,
+                        admin:true,
+                    }
+                },
+                {
+                    path: '/master-bagian',
+                    name: 'master-bagian',
+                    component: () => import('@/views/kantin/master/bagian/Index.vue'),
+                    meta:{
+                        requiresAuth: true,
+                        admin:true,
+                    }
+                },
             ]
         },
         {

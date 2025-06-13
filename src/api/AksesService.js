@@ -34,4 +34,39 @@ export default new class AksesService{
         return httpAuth.delete(`v1/master-bagian/${id}`);
     }
 
+    // Master Shift
+    getAllShift(){
+        return httpAuth.get(`v1/master-shift/`);
+    }
+    getByIDShift(id){
+        return httpAuth.get(`v1/master-shift/${id}`);
+    }
+    createShift(data){
+        return httpAuth.post('v1/master-shift/', data);
+    }
+    updateShift(id, data){
+        return httpAuth.put(`v1/master-shift/${id}`, data);
+    }
+
+    // Master Ramadhan
+    getAllRamadhan(){
+        return httpAuth.get(`v1/master-ramadhan/`);
+    }
+    createRamadhan(data){
+        return httpAuth.post('v1/master-ramadhan/', data);
+    }
+    updateRamadhan(id, data){
+        return httpAuth.put(`v1/master-ramadhan/${id}`, data);
+    }
+
+    // Master Waktu Makan
+    getAllWaktuMakan(){
+        return httpAuth.get(`v1/master-waktu-makan`);
+    }
+    createWaktuMakan(data){
+        return httpAuth.post('v1/master-waktu-makan/', data);
+    }
+    updateWaktuMakan(id, data){
+        return httpAuth.put(`v1/master-waktu-makan/${id}`, data);
+    }
 }

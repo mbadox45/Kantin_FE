@@ -21,6 +21,7 @@
     const listUser = ref([])
     const statusForm = ref('')
     const date = ref({start:moment(new Date()).format('YYYY-MM-01'), end:moment(new Date()).format('YYYY-MM-DD')})
+    const roles = ref(localStorage.getItem('roles'));
 
     const form = ref({
         id: null,
@@ -238,10 +239,10 @@
                     </div>
                 </template>
             </Column>
-            <Column header="Tanggal" sortable sortField="tanggal_kunjungan">
+            <Column header="Tanggal" sortable sortField="tanggal">
                 <template #body="{ data }">
                     <div class="flex align-items-center gap-2">
-                        <span class="uppercase">{{ data.tanggal_kunjungan }}</span>
+                        <span class="uppercase">{{ data.tanggal }}</span>
                     </div>
                 </template>
             </Column>
@@ -266,7 +267,7 @@
                     </div>
                 </template>
             </Column>
-            <Column header="">
+            <Column header="" v-if="roles != 'user'">
                 <template #body="{ data }">
                     <div class="flex items-content-center gap-3"></div>
                     <Button @click="show_dialog('update',data)" severity="warning" text icon="pi pi-pencil" />

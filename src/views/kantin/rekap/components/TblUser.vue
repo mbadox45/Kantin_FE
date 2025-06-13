@@ -15,6 +15,7 @@
     const header_dialog = ref('')
     const statusForm = ref('')
     const date = ref({start:moment(new Date()).format('YYYY-MM-01'), end:moment(new Date()).format('YYYY-MM-DD')})
+    const roles = ref(localStorage.getItem('roles'));
 
     // Function
     onMounted(() => {
@@ -134,7 +135,7 @@
         </Dialog>
         <div class="flex align-items-center justify-content-between mb-5 gap-3">
             <div class="p-inputgroup w-full">
-                <Button type="button" label="Tambah Kehadiran" icon="pi pi-plus" size="small" severity="info" @click="show_dialog('add', null)"></Button>
+                <Button v-if="roles != 'user'" type="button" label="Tambah Kehadiran" icon="pi pi-plus" size="small" severity="info" @click="show_dialog('add', null)"></Button>
                 <span class="p-inputgroup-addon bg-white">
                     <i class="pi pi-search"></i>
                 </span>
@@ -185,7 +186,7 @@
                     </div>
                 </template>
             </Column>
-            <Column header="#" >
+            <Column header="#" v-if="roles != 'user'">
                 <template #body="{ data }">
                     <Button @click="show_dialog('delete',data)" severity="danger" text icon="pi pi-trash" />
                 </template>

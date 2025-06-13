@@ -29,6 +29,7 @@ const Menu = () => {
                 label: 'Main Menu',
                 items: [
                     { label: 'Rekap Data', icon: 'pi pi-fw pi-database', to: '/rekap' },
+                    { label: 'Shift Karyawan', icon: 'pi pi-fw pi-thumbs-up', to: '/shift-karyawan' },
                     { label: 'Administrator', icon: 'pi pi-fw pi-cog', items:[
                         { label: 'User Akun', icon: 'pi pi-fw pi-users', to: '/akun' },
                         { label: 'RFID', icon: 'pi pi-fw pi-wifi', items:[
@@ -36,8 +37,12 @@ const Menu = () => {
                             { label: 'List User', icon: 'pi pi-fw pi-user', to: '/akses' },
                         ]},
                     ] },
-                    { label: 'Absen Finger', icon: 'pi pi-fw pi-thumbs-up', to: '/absen-finger' },
-                    { label: 'Profil', icon: 'pi pi-fw pi-lock', to: '/profil' },
+                    { label: 'Master Data', icon: 'pi pi-fw pi-database', items:[
+                        { label: 'Waktu Makan', icon: 'pi pi-fw pi-clock', to: '/master-waktu-makan' },
+                        { label: 'Ramadhan', icon: 'pi pi-fw pi-moon', to: '/master-ramadhan' },
+                        { label: 'Shift', icon: 'pi pi-fw pi-bolt', to: '/master-shift' },
+                        { label: 'Bagian', icon: 'pi pi-fw pi-bookmark', to: '/master-bagian' },
+                    ] },
                 ]
             },
         ];
@@ -51,7 +56,7 @@ const Menu = () => {
                 label: 'Main Menu',
                 items: [
                     { label: 'Rekap Data', icon: 'pi pi-fw pi-database', to: '/rekap' },
-                    { label: 'Profil', icon: 'pi pi-fw pi-lock', to: '/profil' },
+                    { label: 'Shift Karyawan', icon: 'pi pi-fw pi-thumbs-up', to: '/shift-karyawan' },
                 ]
             },
         ]
