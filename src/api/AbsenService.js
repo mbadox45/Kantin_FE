@@ -4,8 +4,11 @@ import httpAuth from './http-auth'
 export default new class AbsenService{
 
     // Absen Kantin
+    // postAbsenKantin(data) {
+    //     return http.post('v1/absen-kantin/', data);
+    // }
     postAbsenKantin(data) {
-        return http.post('v1/absen-kantin/', data);
+        return http.post('v1/absen-kantin/tap', data);
     }
     getAllAbsenKantin(){
         return http.get('v1/absen-kantin/');

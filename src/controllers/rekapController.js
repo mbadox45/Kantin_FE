@@ -11,3 +11,20 @@ export const getDataByPeriod = async (start, end) => {
         return null
     }
 }
+
+export const postAbsenKantin = async (data) => {
+    try {
+        const response = await AbsenService.postAbsenKantin(data)
+        const load = response.data;
+        return load;
+    } catch (error) {
+        const response = error.response.data
+        console.log(response)
+        return {
+            code: response.code,
+            status: response.status,
+            message: response.message,
+            data: response.data,
+        }
+    }
+}
