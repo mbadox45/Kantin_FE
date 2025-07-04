@@ -355,7 +355,7 @@
                 <div class="flex align-items-start gap-4">
                     <div class="flex flex-column justify-content-between w-full gap-2">
                         <label for="username" class="font-semibold">Silahkan pilih file</label>
-                        <MultiSelect v-model="formExport" :options="listUserKantin" filter optionLabel="nama" placeholder="Select Karyawan" class="w-full" />
+                        <MultiSelect :maxSelectedLabels="3" v-model="formExport" :options="listUserKantin" filter optionLabel="nama" placeholder="Select Karyawan" class="w-full" />
                     </div>
                 </div>
                 <div class="flex justify-content-end gap-2">

@@ -58,30 +58,46 @@
 
     const postTapping = async () => {
         try {
-            const response = await postAbsenKantin({rfid:value_rfid.value})
-            console.log(response)
-            if (response.status == true) {
-                const data = response.data
-                messages.value = {
-                    nama: data.nama,
-                    msg: response.message,
-                    jam: data.waktu
-                }
-                await loadDataUser()
-                setTimeout(() => {
-                    value_rfid.value = ''
+            const rfid = value_rfid.value.toString();
+            if (rfid.length >= 8) {
+                const response = await postAbsenKantin({rfid:value_rfid.value})
+                if (response.status == true) {
+                    const data = response.data
                     messages.value = {
-                        nama: '',
-                        msg: '',
-                        jam: ''
+                        nama: data.nama,
+                        msg: response.message,
+                        jam: data.waktu
                     }
-                }, 2000);
+                    await loadDataUser()
+                    setTimeout(() => {
+                        value_rfid.value = ''
+                        messages.value = {
+                            nama: '',
+                            msg: '',
+                            jam: ''
+                        }
+                    }, 2000);
+                } else {
+                    const data = response.data
+                    messages.value = {
+                        nama: data == null ? 'Belum Terdaftar !' : data.nama,
+                        msg: data == null ? 'Silahkan daftarkan ID Card anda!' : response.message,
+                        jam: data == null ? moment(new Date()).format('HH:mm:ss') : data.waktu,
+                    }
+                    setTimeout(() => {
+                        value_rfid.value = ''
+                        messages.value = {
+                            nama: '',
+                            msg: '',
+                            jam: ''
+                        }
+                    }, 2000);
+                }
             } else {
-                const data = response.data
                 messages.value = {
-                    nama: data == null ? 'Belum Terdaftar !' : data.nama,
-                    msg: data == null ? 'Silahkan daftarkan ID Card anda!' : response.message,
-                    jam: data == null ? moment(new Date()).format('HH:mm:ss') : data.waktu,
+                    nama: 'Belum Terdaftar !',
+                    msg: 'Silahkan daftarkan ID Card anda!',
+                    jam: moment().format('HH:mm:ss')
                 }
                 setTimeout(() => {
                     value_rfid.value = ''
@@ -123,9 +139,10 @@
                         <span class="font-italic">Palm Oil Refinery & Fractionation</span>
                     </div>
                 </div>
-                <div>
+                <div class="flex flex-column">
                     <h3 class="text-teal-700 font-medium text-4xl">Please Tap Your ID Card</h3>
                     <input type="text" v-model="value_rfid" id="inputRef" class="input-style" autofocus @input="postTapping"/>
+                    <span class="text-center w-full text-lg font-bold font-mono">{{ value_rfid }}</span>
                     <!-- <InputText type="text" v-model="value_rfid" id="inputRef" class="text-white border-0 border-white p-0 focus:border-0 focus:border-white active:border-0 active:border-white" @input="post_absen"/> -->
                 </div>
                 <div class="my-7">
